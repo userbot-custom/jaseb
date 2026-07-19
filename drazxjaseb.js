@@ -1,3 +1,5 @@
+'use strict';
+
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
@@ -458,7 +460,7 @@ bot.action('ownermenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  await editMenu(ctx, chatId, messageId, caption, [[{ text: '🔙 KEMBALI', callback_data: 'startback' }]]);
+  const inlineKeyboard = [[{ text: 🔙 'KEMBALI', callback_data: 'startback', style: 'Warning' }]];
   ctx.answerCbQuery();
 });
 
@@ -483,7 +485,7 @@ bot.action('sharemenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  await editMenu(ctx, chatId, messageId, caption, [[{ text: '🔙 KEMBALI', callback_data: 'startback' }]]);
+  const inlineKeyboard = [[{ text: 🔙 'KEMBALI', callback_data: 'startback', style: 'Warning' }]];
   ctx.answerCbQuery();
 });
 
@@ -506,13 +508,13 @@ bot.action('startback', async (ctx) => {
 
   const inlineKeyboard = [
     [
-      { text: 'JASHER MENU', callback_data: 'sharemenu' },
-      { text: 'OWNER MENU',  callback_data: 'ownermenu' },
+      { text: 'JASHER MENU', callback_data: 'sharemenu', style: 'Primary' },
+      { text: 'OWNER MENU', callback_data: 'ownermenu', style: 'Danger' }
     ],
     [
-      { text: 'OWNER',       url: 'https://t.me/drazxreal' },
-      { text: 'ADD GROUP',   url: `https://t.me/${botUsername}?startgroup=true` },
-    ],
+      { text: 'OWNER', url: 'https://t.me/lordsaurus', style: 'Success' },
+      { text: '➕ ADD GROUP', url: `https://t.me/${botUsername}?startgroup=true`, style: 'Success' }
+    ]
   ];
   await editMenu(ctx, chatId, messageId, caption, inlineKeyboard);
   ctx.answerCbQuery();
