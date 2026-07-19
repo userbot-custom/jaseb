@@ -1,0 +1,14 @@
+{
+  "name": "SC JASEB VIP",
+  "version": "1.0.0",
+  "description": "Credit By @drazxreal",
+  "main": "drazxjaseb.js",
+  "scripts": {
+    "start": "node drazxjaseb.js"
+  },
+  "author": "drazxreal",
+  "license": "MIT",
+  "dependencies": {
+    "telegraf": "^4.16.3"
+  }
+}
