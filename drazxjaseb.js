@@ -1,3 +1,5 @@
+'use strict';
+
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
