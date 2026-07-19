@@ -460,7 +460,7 @@ bot.action('ownermenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  const inlineKeyboard = [[{ text: 🔙 'KEMBALI', callback_data: 'startback', style: 'Warning' }]];
+  const inlineKeyboard = [[{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]];
   ctx.answerCbQuery();
 });
 
@@ -485,7 +485,7 @@ bot.action('sharemenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  const inlineKeyboard = [[{ text: 🔙 'KEMBALI', callback_data: 'startback', style: 'Warning' }]];
+  const inlineKeyboard = [[{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]];
   ctx.answerCbQuery();
 });
 
