@@ -460,8 +460,12 @@ bot.action('ownermenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  const inlineKeyboard = [[{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]];
-  ctx.answerCbQuery();
+  const inlineKeyboard = [
+  [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]
+];
+
+await editMenu(ctx, chatId, messageId, caption, inlineKeyboard);
+ctx.answerCbQuery();
 });
 
 bot.action('sharemenu', async (ctx) => {
@@ -485,8 +489,12 @@ bot.action('sharemenu', async (ctx) => {
     `</blockquote>\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  const inlineKeyboard = [[{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]];
-  ctx.answerCbQuery();
+  const inlineKeyboard = [
+  [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]
+];
+
+await editMenu(ctx, chatId, messageId, caption, inlineKeyboard);
+ctx.answerCbQuery();
 });
 
 bot.action('startback', async (ctx) => {
