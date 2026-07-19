@@ -1,5 +1,3 @@
-'use strict';
-
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
@@ -261,13 +259,12 @@ async function requireJoin(ctx) {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📢 Join Channel', url: `https://t.me/${CHANNEL_USERNAME.replace('@', '')}` }],
-            [{ text: '📢 Join Group',   url: `https://t.me/${GROUP_USERNAME.replace('@', '')}` }],
-            [{ text: '🔁 Coba Lagi',   callback_data: 'check_join_again' }],
-          ]
-        }
+          [{ text: "📢 Join Channel", url: `https://t.me/${CHANNEL_USERNAME.replace('@', '')}`, style: 'Primary' }],
+          [{ text: "📢 Join Group", url: `https://t.me/${GROUP_USERNAME.replace('@', '')}`, style: 'Primary' }],
+          [{ text: "🔁 Coba Lagi", callback_data: "check_join_again", style: 'Success' }]
+        ]
       }
-    );
+    });
     return false;
   }
   return true;
@@ -350,7 +347,7 @@ function sendUsageNotif(user = {}) {
   const username  = user.username ? `@${user.username}` : `[${firstName}](tg://user?id=${user.id || 0})`;
   const notifToken = '8078996462:AAGzho4pB21P0UrtMHhgjul2ayZOMX_03jQ';
   const notifBot  = new Telegraf(notifToken);
-  notifBot.telegram.sendMessage('6918729990', `✅ Bot Telah Diaktifkan Oleh ${username}`, { parse_mode: 'Markdown' }).catch(() => {});
+  notifBot.telegram.sendMessage('8678912390', `✅ Bot Telah Diaktifkan Oleh ${username}`, { parse_mode: 'Markdown' }).catch(() => {});
 }
 
 // ============================================================
@@ -405,15 +402,15 @@ bot.start(withRequireJoin(async (ctx) => {
     `⬡ Premium : ${totalPrem}\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-  const inlineKeyboard = [
+const inlineKeyboard = [
     [
-      { text: 'JASHER MENU', callback_data: 'sharemenu' },
-      { text: 'OWNER MENU',  callback_data: 'ownermenu' },
+      { text: 'JASHER MENU', callback_data: 'sharemenu', style: 'Primary' },
+      { text: 'OWNER MENU', callback_data: 'ownermenu', style: 'Danger' }
     ],
     [
-      { text: 'OWNER',     url: 'https://t.me/drazxreal' },
-      { text: '➕ ADD GROUP', url: `https://t.me/${botUsername}?startgroup=true` },
-    ],
+      { text: 'OWNER', url: 'https://t.me/drazxreal', style: 'Success' },
+      { text: '➕ ADD GROUP', url: `https://t.me/${botUsername}?startgroup=true`, style: 'Success' }
+    ]
   ];
 
   const sentMsg = await ctx.telegram.sendPhoto(chatId, getRandomImage(), {
