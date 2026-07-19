@@ -432,8 +432,9 @@ const inlineKeyboard = [
 //  MENU CALLBACKS
 // ============================================================
 bot.action('ownermenu', async (ctx) => {
-  const { id: chatId } = ctx.chat;
-  const messageId = ctx.callbackQuery.message.message_id;
+    try {
+        const chatId = ctx.chat.id;
+        const messageId = ctx.callbackQuery.message.message_id;
   const grpData   = loadGroups();
   const usrs      = loadUsers();
 
@@ -461,16 +462,29 @@ bot.action('ownermenu', async (ctx) => {
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
   const inlineKeyboard = [
-  [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]
-];
+            [{ text: '🔙 KEMBALI', callback_data: 'startback' }]
+        ];
 
-await editMenu(ctx, chatId, messageId, caption, inlineKeyboard);
-ctx.answerCbQuery();
+        await editMenu(
+            ctx,
+            chatId,
+            messageId,
+            caption,
+            inlineKeyboard
+        );
+
+        await ctx.answerCbQuery();
+
+    } catch (e) {
+        console.log(e);
+        await ctx.answerCbQuery("Terjadi kesalahan.");
+    }
 });
 
 bot.action('sharemenu', async (ctx) => {
-  const { id: chatId } = ctx.chat;
-  const messageId = ctx.callbackQuery.message.message_id;
+    try {
+        const chatId = ctx.chat.id;
+        const messageId = ctx.callbackQuery.message.message_id;
   const grpData   = loadGroups();
   const usrs      = loadUsers();
 
@@ -490,11 +504,23 @@ bot.action('sharemenu', async (ctx) => {
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
   const inlineKeyboard = [
-  [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'Warning' }]
-];
+            [{ text: '🔙 KEMBALI', callback_data: 'startback' }]
+        ];
 
-await editMenu(ctx, chatId, messageId, caption, inlineKeyboard);
-ctx.answerCbQuery();
+        await editMenu(
+            ctx,
+            chatId,
+            messageId,
+            caption,
+            inlineKeyboard
+        );
+
+        await ctx.answerCbQuery();
+
+    } catch (e) {
+        console.log(e);
+        await ctx.answerCbQuery("Terjadi kesalahan.");
+    }
 });
 
 bot.action('startback', async (ctx) => {
