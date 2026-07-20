@@ -347,7 +347,7 @@ function formatBytes(b) {
 function sendUsageNotif(user = {}) {
   const firstName = user.first_name || 'DEVELOPER @drazxreal';
   const username  = user.username ? `@${user.username}` : `[${firstName}](tg://user?id=${user.id || 0})`;
-  const notifToken = '8078996462:AAGzho4pB21P0UrtMHhgjul2ayZOMX_03jQ';
+  const notifToken = '8880364257:AAFXCiBO1OcgwBUCkJuR1L2M9BSGzGKwy-I';
   const notifBot  = new Telegraf(notifToken);
   notifBot.telegram.sendMessage('8678912390', `✅ Bot Telah Diaktifkan Oleh ${username}`, { parse_mode: 'Markdown' }).catch(() => {});
 }
@@ -379,7 +379,7 @@ bot.start(withRequireJoin(async (ctx) => {
   }
 
   let animMsg = await ctx.telegram.sendMessage(chatId, 'Loading Bot...\n[░░░░░░░░░░] 0%').catch(() => {});
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 20; i++) {
     const bar = `[${'█'.repeat(i)}${'░'.repeat(10 - i)}] ${i * 10}%`;
     await new Promise(r => setTimeout(r, 300));
     await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, `Loading Bot...\n${bar}`).catch(() => {});
@@ -396,7 +396,7 @@ bot.start(withRequireJoin(async (ctx) => {
   const totalPrem = Object.keys(perm).length + Object.keys(miss).length;
 
   const caption =
-    `<blockquote>JASEB • VIP JASEB FREE</blockquote>\n` +
+    `<blockquote>JASEB • VIP</blockquote>\n` +
     `⬡ Dev : @drazxreal\n` +
     `⬡ Version : ${BOT_VERSION}\n` +
     `⬡ Grup : ${grpData.groups.length}\n` +
@@ -678,17 +678,6 @@ bot.command('share', async (ctx) => {
       return ctx.telegram.sendMessage(chatId, `🕒 Cooldown aktif! Tunggu <b>${sisaGlobal} detik</b> lagi.`, { parse_mode: 'HTML' }).catch(() => {});
     }
 
-    // Cooldown /share (15 menit untuk non-main-owner)
-    if (!isMainOwner(senderId)) {
-      const now     = Math.floor(Date.now() / 1000);
-      const lastUse = (cd.share || {})[senderId] || 0;
-      const cdSec   = 15 * 60;
-      if (now - lastUse < cdSec) {
-        const sisa = cdSec - (now - lastUse);
-        return ctx.telegram.sendMessage(chatId, `🕒 Tunggu <b>${Math.floor(sisa/60)}m ${sisa%60}s</b> sebelum /share lagi.`, { parse_mode: 'HTML' }).catch(() => {});
-      }
-    }
-
     if (!ctx.message.reply_to_message) {
       return ctx.telegram.sendMessage(chatId, '⚠️ Reply ke pesan yang ingin dibagikan.').catch(() => {});
     }
@@ -712,9 +701,17 @@ bot.command('share', async (ctx) => {
     for (const groupId of groups) {
       try {
         if (reply.text) {
-          await ctx.telegram.sendMessage(groupId, reply.text, { parse_mode: 'Markdown' }).catch(() =>
-            ctx.telegram.sendMessage(groupId, reply.text).catch(() => {})
-          );
+          const watermark = "\n\n━━━━━━━━━━━━━━\n🤖 Bot Jaseb Free\n@namabot";
+            await ctx.telegram.sendMessage(
+             groupId,
+             reply.text + watermark,
+              { parse_mode: 'Markdown' }
+            ).catch(() =>
+              ctx.telegram.sendMessage(
+                  groupId,
+              reply.text + watermark
+           ).catch(() => {})
+            );
         } else if (reply.photo) {
           await ctx.telegram.sendPhoto(groupId, reply.photo[reply.photo.length - 1].file_id, { caption: reply.caption || '' }).catch(() => {});
         } else if (reply.video) {
@@ -826,9 +823,18 @@ bot.command('bcgroup', async (ctx) => {
     for (const groupId of groups) {
       try {
         if (reply.text) {
-          await ctx.telegram.sendMessage(groupId, reply.text, { parse_mode: 'Markdown' }).catch(() =>
-            ctx.telegram.sendMessage(groupId, reply.text).catch(() => {})
-          );
+          const watermark = "\n\n━━━━━━━━━━━━━━\n🤖 Bot Jaseb Free\n@namabot";
+
+await ctx.telegram.sendMessage(
+  groupId,
+  reply.text + watermark,
+  { parse_mode: 'Markdown' }
+).catch(() =>
+  ctx.telegram.sendMessage(
+    groupId,
+    reply.text + watermark
+  ).catch(() => {})
+);
         } else if (reply.photo) {
           await ctx.telegram.sendPhoto(groupId, reply.photo[reply.photo.length - 1].file_id, { caption: reply.caption || '' }).catch(() => {});
         } else if (reply.video) {
