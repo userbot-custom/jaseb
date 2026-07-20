@@ -385,8 +385,6 @@ if (animMsg) {
   try {
     await ctx.telegram.deleteMessage(chatId, animMsg.message_id);
   } catch {}
-}
-  }
   await new Promise(r => setTimeout(r, 500));
   await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, 'Succes Loading Bot...').catch(() => {});
   await new Promise(r => setTimeout(r, 500));
