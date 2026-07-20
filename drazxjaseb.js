@@ -347,49 +347,40 @@ bot.start(withRequireJoin(async (ctx) => {
   const usrData = loadUsers();
   if (!usrData.list.includes(userId)) { usrData.list.push(userId); saveUsers(usrData); }
 
-  // Animasi loading
-  const steps = ['JASEB • VIP JASEB FREE', 'DEVELOPER : @drazxreal', `VERSION: ${BOT_VERSION}`];
-  for (const s of steps) {
-    const t = await ctx.telegram.sendMessage(chatId, s).catch(() => {});
-    await new Promise(r => setTimeout(r, 1000));
-    if (t) ctx.telegram.deleteMessage(chatId, t.message_id).catch(() => {});
-  }
-
-if (animMsg) {
-  for (let i = 1; i <= 10; i++) {
-    const bar = `[${'█'.repeat(i)}${'░'.repeat(10 - i)}] ${i * 10}%`;
-
-    await new Promise(r => setTimeout(r, 300));
+  // Animasi loading dengan pesan progress
+  const loadingMsg = await ctx.telegram.sendMessage(chatId, '🚀 Loading Bot... 0%').catch(() => {});
+  
+  if (loadingMsg) {
+    for (let i = 1; i <= 10; i++) {
+      const bar = `[${'█'.repeat(i)}${'░'.repeat(10 - i)}] ${i * 10}%`;
+      await new Promise(r => setTimeout(r, 300));
+      try {
+        await ctx.telegram.editMessageText(
+          chatId,
+          loadingMsg.message_id,
+          undefined,
+          `🚀 Loading Bot...\n${bar}`
+        );
+      } catch {}
+    }
 
     try {
       await ctx.telegram.editMessageText(
         chatId,
-        animMsg.message_id,
+        loadingMsg.message_id,
         undefined,
-        `Loading Bot...\n${bar}`
+        '✅ Sukses Loading Bot...'
       );
+    } catch {}
+
+    await new Promise(r => setTimeout(r, 500));
+
+    try {
+      await ctx.telegram.deleteMessage(chatId, loadingMsg.message_id);
     } catch {}
   }
 
-  try {
-    await ctx.telegram.editMessageText(
-      chatId,
-      animMsg.message_id,
-      undefined,
-      'Succes Loading Bot...'
-    );
-  } catch {}
-
-  await new Promise(r => setTimeout(r, 500));
-
-  try {
-    await ctx.telegram.deleteMessage(chatId, animMsg.message_id);
-  } catch {}
-  await new Promise(r => setTimeout(r, 500));
-  await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, 'Succes Loading Bot...').catch(() => {});
-  await new Promise(r => setTimeout(r, 500));
-  await ctx.telegram.deleteMessage(chatId, animMsg.message_id).catch(() => {});
-
+  // Data statistik
   const grpData = loadGroups();
   const perm    = loadPermPrem();
   const miss    = loadMissPrem();
@@ -405,7 +396,7 @@ if (animMsg) {
     `⬡ Premium : ${totalPrem}\n` +
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
-const inlineKeyboard = [
+  const inlineKeyboard = [
     [
       { text: 'JASHER MENU', callback_data: 'sharemenu', style: 'Primary' },
       { text: 'OWNER MENU', callback_data: 'ownermenu', style: 'Danger' }
@@ -427,7 +418,7 @@ const inlineKeyboard = [
     settings.lastMenuMessage = { chatId, messageId: sentMsg.message_id };
     saveSettings(settings);
   }
-});
+}));
 
 // ============================================================
 //  MENU CALLBACKS
