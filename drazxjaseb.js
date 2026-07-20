@@ -287,10 +287,12 @@ async function requireJoin(ctx) {
   const isMember = await checkChannelMembership(ctx, userId);
   if (!isMember) {
     await ctx.telegram.sendMessage(userId,
-      `<blockquote>🚫 AKSES DITOLAK</blockquote>\n\n` +
-      `<b>Kamu belum bergabung!</b>\n` +
-      `Join Channel di bawah untuk memakai bot.\n\n` +
-      `• Klik "Coba Lagi" setelah join</blockquote>`,
+      `<blockquote>\n` +
+      `🚫 <b>AKSES DITOLAK</b>\n\n` +
+      `Kamu belum bergabung!\n` +
+      `Join Channel di bawah untuk memakai bot.\n` +
+      `• Klik "Coba Lagi" setelah join\n` +
+      `</blockquote>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -442,17 +444,15 @@ bot.start(withRequireJoin(async (ctx) => {
   const miss    = loadMissPrem();
   const usrs    = loadUsers();
   const totalPrem = Object.keys(perm).length + Object.keys(miss).length
-  const username = ctx.from.username || ctx.from.first_name || 'User';;
+ const username = ctx.from.username || ctx.from.first_name || 'User';
 
-  const caption =
+const caption =
 `<b>👋 olaa, @${username}</b>\n\n` +
 `<blockquote>\n` +
 `📢 Selamat datang di Bot Jaseb Vip Free\n\n` +
-`Bot ini membantu menyebarkan pesan promosi, pemberitahuan dan informasi dengan bot ini pesan-pesan terkirim dengan kilat⚡.\n` +
-`</blockquote>\n\n` +
-`<blockquote>\n` +
+`Bot ini membantu menyebarkan pesan promosi, pemberitahuan dan informasi dengan bot ini pesan-pesan terkirim dengan kilat⚡.\n\n` +
 `📊 <b>STATISTIK BOT</b>\n\n` +
-'🌟 Devoloper : @drazxreal\n' +
+`🌟 Developer : @drazxreal\n` +
 `👤 Pengguna : ${usrs.list.length}\n` +
 `👥 Grup : ${grpData.groups.length}\n` +
 `🚀 Versi : ${BOT_VERSION}\n` +
@@ -493,28 +493,28 @@ bot.action('ownermenu', async (ctx) => {
   const usrs      = loadUsers();
 
   const caption =
-'👑 <b>OWNER MENU</b>\n\n' +
-'<blockquote>\n' +
-'🔒 Menu khusus Owner Bot.\n' +
-'Hanya owner yang memiliki akses ke fitur pengelolaan dan pengaturan bot.\n' +
-'Digunakan untuk mengatur broadcast, pengguna, dan sistem bot.\n' +
-'</blockquote>\n\n' +
-'📌 OWNER MENU:\n' +
-    `• /addownjs\n` +
-    `• /delownjs\n` +
-    `• /addprem\n` +
-    `• /delprem\n` +
-    `• /listprem\n` +
-    `• /cekprem\n` +
-    `• /setcd\n` +
-    `• /listgroup\n` +
-    `• /bcgroup\n` +
-    `• /bcuser\n` +
-    `• /stats\n` +
-    `• /lastbackup\n` +
-    `• /restorebackup\n` +
-    `</blockquote>\n` +
-    `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
+`<blockquote>\n` +
+`👑 <b>OWNER MENU</b>\n\n` +
+`🔒 Menu khusus Owner Bot.\n` +
+`Hanya owner yang memiliki akses ke fitur pengelolaan dan pengaturan bot.\n` +
+`Digunakan untuk mengatur broadcast, pengguna, dan sistem bot.\n\n` +
+`📌 DAFTAR PERINTAH:\n` +
+`• /addownjs\n` +
+`• /delownjs\n` +
+`• /addprem\n` +
+`• /delprem\n` +
+`• /listprem\n` +
+`• /cekprem\n` +
+`• /setcd\n` +
+`• /listgroup\n` +
+`• /bcgroup\n` +
+`• /bcuser\n` +
+`• /stats\n` +
+`• /lastbackup\n` +
+`• /restorebackup\n\n` +
+`JASEB • VIP ${BOT_VERSION}\n` +
+`© @drazxreal\n` +
+`</blockquote>`;
 
   const inlineKeyboard = [
             [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'primary' }]
@@ -544,6 +544,7 @@ bot.action('sharemenu', async (ctx) => {
   const usrs      = loadUsers();
 
   const caption =
+  '<blockquote>\n' +
     '📢 <b>JASEB MENU</b>\n\n' +
 '<blockquote>\n' +
 '🚀 Menu ini digunakan untuk membantu menyebarkan pesan ke grup yang terhubung dengan bot.\n' +
@@ -555,8 +556,7 @@ bot.action('sharemenu', async (ctx) => {
     `• /set\n` +
     `• /auto on/off\n` +
     `• /auto status\n` +
-    `</blockquote>\n` +
-    `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
+  `JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
   const inlineKeyboard = [
             [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'primary' }]
@@ -591,9 +591,7 @@ bot.action('startback', async (ctx) => {
     `<b>👋 olaa, @${username}</b>\n\n` +
 `<blockquote>\n` +
 `📢 Selamat datang di Bot Jaseb Vip Free\n\n` +
-`Bot ini membantu menyebarkan pesan promosi, pemberitahuan dan informasi dengan bot ini pesan-pesan terkirim dengan kilat⚡.\n` +
-`</blockquote>\n\n` +
-`<blockquote>\n` +
+`Bot ini membantu menyebarkan pesan promosi, pemberitahuan dan informasi dengan bot ini pesan-pesan terkirim dengan kilat⚡.\n\n` +
 `📊 <b>STATISTIK BOT</b>\n\n` +
 '🌟 Devoloper : @drazxreal\n' +
 `👤 Pengguna : ${usrs.list.length}\n` +
@@ -673,24 +671,28 @@ bot.on('my_chat_member', async (ctx) => {
           saveMissPrem(missPrem);
 
           ctx.telegram.sendMessage(userId,
-            `<blockquote>🎉 PREMIUM DIDAPATKAN</blockquote>\n\n` +
-            `✅ Kamu berhasil menambahkan gua ke ${validGroupCount} grup (member >= 10).\n` +
-            `✅ Akses Premium Misi diberikan selama <b>3 hari</b>!\n\n` +
-            `<blockquote>📊 STATUS:\n` +
-            `⬡ Grup Valid: ${validGroupCount}\n` +
-            `⬡ Total Grup: ${total}</blockquote>`,
-            { parse_mode: 'HTML' }
-          ).catch(() => {});
+  `<blockquote>\n` +
+  `🎉 <b>PREMIUM DIDAPATKAN</b>\n\n` +
+  `✅ Kamu berhasil menambahkan gua ke ${validGroupCount} grup (member >= 10).\n` +
+  `✅ Akses Premium Misi diberikan selama <b>3 hari</b>!\n\n` +
+  `📊 STATUS:\n` +
+  `⬡ Grup Valid: ${validGroupCount}\n` +
+  `⬡ Total Grup: ${total}\n` +
+  `</blockquote>`,
+  { parse_mode: 'HTML' }
+).catch(() => {});
 
-          const info =
-            `<blockquote>📢 BOT DITAMBAHKAN KE GRUP</blockquote>\n\n` +
-            `⬡ Username: @${user.username || '–'}\n` +
-            `⬡ ID User: <code>${userId}</code>\n` +
-            `⬡ Nama Grup: ${chat.title}\n` +
-            `⬡ ID Grup: <code>${chatId}</code>\n` +
-            `⬡ Total Grup: ${total}\n` +
-            `⬡ Member: ${memberCount}\n` +
-            `⬡ Grup Valid: ${validGroupCount}`;
+const info =
+  `<blockquote>\n` +
+  `📢 BOT DITAMBAHKAN KE GRUP\n\n` +
+  `⬡ Username: @${user.username || '–'}\n` +
+  `⬡ ID User: <code>${userId}</code>\n` +
+  `⬡ Nama Grup: ${chat.title}\n` +
+  `⬡ ID Grup: <code>${chatId}</code>\n` +
+  `⬡ Total Grup: ${total}\n` +
+  `⬡ Member: ${memberCount}\n` +
+  `⬡ Grup Valid: ${validGroupCount}\n` +
+  `</blockquote>`;
 
           const ownersData = loadOwners();
           for (const oid of ownersData.list) {
@@ -702,15 +704,17 @@ bot.on('my_chat_member', async (ctx) => {
           // Informasi bahwa belum memenuhi syarat
           const needed = 2 - validGroupCount;
           ctx.telegram.sendMessage(userId,
-            `<blockquote>📢 GRUP DITAMBAHKAN</blockquote>\n\n` +
-            `✅ Grup <b>${chat.title}</b> berhasil ditambahkan.\n\n` +
-            `<blockquote>📊 STATUS SAAT INI:\n` +
-            `⬡ Grup Valid: ${validGroupCount}/2\n` +
-            `⬡ Total Grup: ${total}</blockquote>\n\n` +
-            `⚠️ <b>Belum memenuhi syarat Premium</b>\n` +
-            `💡 Tambahkan ${needed} grup lagi dengan minimal 10 member untuk mendapatkan Premium Misi 3 hari.`,
-            { parse_mode: 'HTML' }
-          ).catch(() => {});
+  `<blockquote>\n` +
+  `📢 GRUP DITAMBAHKAN\n\n` +
+  `✅ Grup <b>${chat.title}</b> berhasil ditambahkan.\n\n` +
+  `📊 STATUS SAAT INI:\n` +
+  `⬡ Grup Valid: ${validGroupCount}/2\n` +
+  `⬡ Total Grup: ${total}\n\n` +
+  `⚠️ Belum memenuhi syarat Premium\n` +
+  `💡 Tambahkan ${needed} grup lagi dengan minimal 10 member untuk mendapatkan Premium Misi 3 hari.\n` +
+  `</blockquote>`,
+  { parse_mode: 'HTML' }
+).catch(() => {});
           saveGroups(grpData);
           await sendBackupToOwners('AUTO BACKUP – TAMBAH GRUP');
         }
@@ -733,12 +737,14 @@ bot.on('my_chat_member', async (ctx) => {
               delete missPrem[userId];
               saveMissPrem(missPrem);
               ctx.telegram.sendMessage(userId,
-                `<blockquote>❌ PREMIUM DICABUT</blockquote>\n\n` +
-                `❌ Kamu menghapus bot dari grup.\n` +
-                `🔒 Akses Premium Misi otomatis dicabut.\n\n` +
-                `💡 Tambahkan kembali bot ke 2 grup dengan minimal 10 member untuk mendapatkan Premium lagi.`,
-                { parse_mode: 'HTML' }
-              ).catch(() => {});
+  `<blockquote>\n` +
+  `❌ <b>PREMIUM DICABUT</b>\n\n` +
+  `❌ Kamu menghapus bot dari grup.\n` +
+  `🔒 Akses Premium Misi otomatis dicabut.\n\n` +
+  `💡 Tambahkan kembali bot ke 2 grup dengan minimal 10 member untuk mendapatkan Premium lagi.\n` +
+  `</blockquote>`,
+  { parse_mode: 'HTML' }
+).catch(() => {});
             }
           }
         }
@@ -772,20 +778,22 @@ bot.command('share', async (ctx) => {
       
       if (validGroupCount < 2) {
         const msg = 
-          `<blockquote>❌ AKSES DITOLAK</blockquote>\n\n` +
-          `⚠️ <b>Anda belum memenuhi syarat untuk menggunakan fitur /share</b>\n\n` +
-          `<blockquote>📋 SYARAT:\n` +
-          `• Tambahkan bot ke 2 grup\n` +
-          `• Minimal 10 member per grup\n` +
-          `• Grup harus aktif dan bot masih di dalamnya</blockquote>\n\n` +
-          `<b>Status Anda:</b>\n` +
-          `<blockquote>⬡ Grup Valid: ${validGroupCount}/2\n` +
-          `⬡ Total Grup: ${grpData.groups.length}</blockquote>\n\n` +
-          `💡 <b>Cara mendapatkan akses:</b>\n` +
-          `• Tambahkan bot ke grup baru\n` +
-          `• Pastikan grup memiliki minimal 10 member\n` +
-          `• Tunggu bot mendeteksi grup (otomatis)\n\n` +
-          `📢 <b>Atau beli Premium:</b>`;
+  `<blockquote>\n` +
+  `❌ <b>AKSES DITOLAK</b>\n\n` +
+  `⚠️ Anda belum memenuhi syarat untuk menggunakan fitur /share\n\n` +
+  `📋 SYARAT:\n` +
+  `• Tambahkan bot ke 2 grup\n` +
+  `• Minimal 10 member per grup\n` +
+  `• Grup harus aktif dan bot masih di dalamnya\n\n` +
+  `📊 Status Anda:\n` +
+  `⬡ Grup Valid: ${validGroupCount}/2\n` +
+  `⬡ Total Grup: ${grpData.groups.length}\n\n` +
+  `💡 Cara mendapatkan akses:\n` +
+  `• Tambahkan bot ke grup baru\n` +
+  `• Pastikan grup memiliki minimal 10 member\n` +
+  `• Tunggu bot mendeteksi grup (otomatis)\n\n` +
+  `📢 Atau beli Premium:\n` +
+  `</blockquote>`;
         
         return ctx.telegram.sendMessage(chatId, msg, {
           parse_mode: 'HTML',
