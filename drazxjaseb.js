@@ -11,7 +11,6 @@ const { BOT_TOKEN, OWNER_IDS, CHANNEL_USERNAME, GROUP_USERNAME, BOT_VERSION } = 
 // ============================================================
 const bot = new Telegraf(BOT_TOKEN);
 const BOT_START_TIME = Date.now();
-const bcCooldown = new Map();
 let autoShareInterval = null;
 let autoShareMessage = null;
 let botUsername = 'MyBot';
@@ -290,32 +289,10 @@ bot.action('check_join_again', async (ctx) => {
 });
 
 // ============================================================
-//  COOLDOWN GLOBAL
-// ============================================================
-function checkGlobalCooldown(userId) {
-  if (isAnyOwner(userId)) return null; // owner bebas cooldown
-  const cd = loadCooldown();
-  const sec = cd.globalCd || 0;
-  if (sec <= 0) return null;
-  const lastUse = (cd.users || {})[String(userId)] || 0;
-  const now = Math.floor(Date.now() / 1000);
-  const sisa = sec - (now - lastUse);
-  return sisa > 0 ? sisa : null;
-}
-
-function touchGlobalCooldown(userId) {
-  if (isAnyOwner(userId)) return;
-  const cd = loadCooldown();
-  if (!cd.users) cd.users = {};
-  cd.users[String(userId)] = Math.floor(Date.now() / 1000);
-  saveCooldown(cd);
-}
-
-// ============================================================
 //  UTILITY
 // ============================================================
 function getRandomImage() {
-  return 'https://files.catbox.moe/u0g1ei.jpg';
+  return 'https://files.catbox.moe/tg0atu.png';
 }
 
 async function editMenu(ctx, chatId, messageId, caption, inlineKeyboard) {
@@ -378,11 +355,37 @@ bot.start(withRequireJoin(async (ctx) => {
     if (t) ctx.telegram.deleteMessage(chatId, t.message_id).catch(() => {});
   }
 
-  let animMsg = await ctx.telegram.sendMessage(chatId, 'Loading Bot...\n[░░░░░░░░░░] 0%').catch(() => {});
+if (animMsg) {
   for (let i = 1; i <= 10; i++) {
     const bar = `[${'█'.repeat(i)}${'░'.repeat(10 - i)}] ${i * 10}%`;
+
     await new Promise(r => setTimeout(r, 300));
-    await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, `Loading Bot...\n${bar}`).catch(() => {});
+
+    try {
+      await ctx.telegram.editMessageText(
+        chatId,
+        animMsg.message_id,
+        undefined,
+        `Loading Bot...\n${bar}`
+      );
+    } catch {}
+  }
+
+  try {
+    await ctx.telegram.editMessageText(
+      chatId,
+      animMsg.message_id,
+      undefined,
+      'Succes Loading Bot...'
+    );
+  } catch {}
+
+  await new Promise(r => setTimeout(r, 500));
+
+  try {
+    await ctx.telegram.deleteMessage(chatId, animMsg.message_id);
+  } catch {}
+}
   }
   await new Promise(r => setTimeout(r, 500));
   await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, 'Succes Loading Bot...').catch(() => {});
@@ -462,7 +465,7 @@ bot.action('ownermenu', async (ctx) => {
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
   const inlineKeyboard = [
-            [{ text: '🔙 KEMBALI', callback_data: 'startback' }]
+            [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'primary' }]
         ];
 
         await editMenu(
@@ -504,7 +507,7 @@ bot.action('sharemenu', async (ctx) => {
     `<blockquote>JASEB • VIP ${BOT_VERSION}\n© @drazxreal</blockquote>`;
 
   const inlineKeyboard = [
-            [{ text: '🔙 KEMBALI', callback_data: 'startback' }]
+            [{ text: '🔙 KEMBALI', callback_data: 'startback', style: 'primary' }]
         ];
 
         await editMenu(
@@ -672,22 +675,9 @@ bot.command('share', async (ctx) => {
       return ctx.telegram.sendMessage(chatId, '❌ Only Premium. Tambahkan bot ke 2 grup dengan 10+ member.').catch(() => {});
     }
 
-    // Cooldown global
-    const sisaGlobal = checkGlobalCooldown(senderId);
-    if (sisaGlobal) {
-      return ctx.telegram.sendMessage(chatId, `🕒 Cooldown aktif! Tunggu <b>${sisaGlobal} detik</b> lagi.`, { parse_mode: 'HTML' }).catch(() => {});
-    }
-
     if (!ctx.message.reply_to_message) {
       return ctx.telegram.sendMessage(chatId, '⚠️ Reply ke pesan yang ingin dibagikan.').catch(() => {});
     }
-
-    if (!isMainOwner(senderId)) {
-      if (!cd.share) cd.share = {};
-      cd.share[senderId] = Math.floor(Date.now() / 1000);
-      saveCooldown(cd);
-    }
-    touchGlobalCooldown(senderId);
 
     const groups = grpData.groups || [];
     if (groups.length === 0) {
@@ -745,17 +735,6 @@ bot.command('bcuser', async (ctx) => {
 
     if (!isAnyOwner(senderId)) {
       return ctx.telegram.sendMessage(chatId, '❌ Akses hanya untuk Owner.').catch(() => {});
-    }
-
-    if (!isMainOwner(senderId)) {
-      const now  = Date.now();
-      const last = bcCooldown.get(senderId) || 0;
-      const cd   = 15 * 60 * 1000;
-      if (now - last < cd) {
-        const sisa = Math.ceil((cd - (now - last)) / 60000);
-        return ctx.telegram.sendMessage(chatId, `⏳ Cooldown aktif! Tunggu <b>${sisa} menit</b>.`, { parse_mode: 'HTML' }).catch(() => {});
-      }
-      bcCooldown.set(senderId, now);
     }
 
     if (!ctx.message.reply_to_message) {
