@@ -427,7 +427,7 @@ const inlineKeyboard = [
     settings.lastMenuMessage = { chatId, messageId: sentMsg.message_id };
     saveSettings(settings);
   }
-}));
+});
 
 // ============================================================
 //  MENU CALLBACKS
