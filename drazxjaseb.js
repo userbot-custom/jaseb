@@ -445,7 +445,6 @@ bot.start(withRequireJoin(async (ctx) => {
   const username = ctx.from.username || ctx.from.first_name || 'User';;
 
   const caption =
-    const text =
 `<b>👋 olaa, @${username}</b>\n\n` +
 `<blockquote>\n` +
 `📢 Selamat datang di Bot Jaseb Vip Free\n\n` +
