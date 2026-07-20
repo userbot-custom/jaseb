@@ -441,7 +441,8 @@ bot.start(withRequireJoin(async (ctx) => {
   const perm    = loadPermPrem();
   const miss    = loadMissPrem();
   const usrs    = loadUsers();
-  const totalPrem = Object.keys(perm).length + Object.keys(miss).length;
+  const totalPrem = Object.keys(perm).length + Object.keys(miss).length
+  const username = ctx.from.username || ctx.from.first_name || 'User';;
 
   const caption =
     const text =
@@ -585,6 +586,7 @@ bot.action('startback', async (ctx) => {
   const usrs      = loadUsers();
   const perm      = loadPermPrem();
   const miss      = loadMissPrem();
+  const username = ctx.from.username || ctx.from.first_name || 'User';
 
   const caption =
     `<b>👋 olaa, @${username}</b>\n\n` +
