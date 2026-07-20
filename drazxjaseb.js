@@ -379,7 +379,7 @@ bot.start(withRequireJoin(async (ctx) => {
   }
 
   let animMsg = await ctx.telegram.sendMessage(chatId, 'Loading Bot...\n[░░░░░░░░░░] 0%').catch(() => {});
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 10; i++) {
     const bar = `[${'█'.repeat(i)}${'░'.repeat(10 - i)}] ${i * 10}%`;
     await new Promise(r => setTimeout(r, 300));
     await ctx.telegram.editMessageText(chatId, animMsg.message_id, undefined, `Loading Bot...\n${bar}`).catch(() => {});
