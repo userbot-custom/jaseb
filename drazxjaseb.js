@@ -56,7 +56,12 @@ function writeJSON(filePath, data) {
 
 function loadOwners()   { return readJSON(DB.owner,    { list: [...OWNER_IDS] }); }
 function saveOwners(d)  { writeJSON(DB.owner, d); }
-function loadGroups()   { return readJSON(DB.group,    { groups: [], user_group_count: {} }); }
+function loadGroups()   {
+  // FIX PREMIUM MISI: tambahkan groupInfo untuk menyimpan kepemilikan & validitas per-grup
+  const d = readJSON(DB.group, { groups: [], user_group_count: {}, groupInfo: {} });
+  if (!d.groupInfo) d.groupInfo = {}; // FIX PREMIUM MISI
+  return d;
+}
 function saveGroups(d)  { 
   writeJSON(DB.group, d);
   // Sinkronisasi dengan group.js
@@ -120,6 +125,7 @@ syncGroupFile();
       if (!grpData.groups.includes(id)) grpData.groups.push(id);
     });
     grpData.user_group_count = old.user_group_count || {};
+    if (!grpData.groupInfo) grpData.groupInfo = {}; // FIX PREMIUM MISI
     saveGroups(grpData);
 
     // Premium lama → permPrem
@@ -187,6 +193,7 @@ function buildBackupPayload() {
     owner: own.list,
     groups: grp.groups,
     user_group_count: grp.user_group_count,
+    groupInfo: grp.groupInfo || {}, // FIX PREMIUM MISI: persist kepemilikan & validitas grup
     users: usr.list,
     premiumPermanent: perm,
     premiumMission: miss,
@@ -328,28 +335,52 @@ bot.action('check_join_again', async (ctx) => {
 // ============================================================
 //  FUNGSI CEK GRUP VALID
 // ============================================================
+// FIX PREMIUM MISI: fungsi ini sebelumnya mengabaikan parameter userId dan
+// mengembalikan SEMUA grup valid milik siapapun. Sekarang difilter per-user,
+// berdasarkan grup unik yang benar-benar terdaftar sebagai milik user tsb,
+// tanpa mensyaratkan bot menjadi admin.
 async function getUserValidGroups(userId) {
+  const uid = String(userId);
   const grpData = loadGroups();
+  const groupInfo = grpData.groupInfo || {};
   const validGroups = [];
-  
+  const seen = new Set(); // FIX PREMIUM MISI: pastikan satu chatId cuma dihitung sekali
+
   for (const groupId of grpData.groups) {
+    const gKey = String(groupId);
+    if (seen.has(gKey)) continue; // FIX PREMIUM MISI: cegah duplikat grup
+
+    const info = groupInfo[gKey];
+    // Grup harus terdaftar sebagai milik/verifikasi user ini
+    if (!info || String(info.addedBy) !== uid) continue; // FIX PREMIUM MISI
+    if (!info.active) continue; // FIX PREMIUM MISI: grup sudah ditinggalkan bot
+
     try {
-      // Cek apakah bot masih di grup (cukup jadi member)
+      // Cek apakah bot masih di grup (cukup jadi member, TIDAK perlu admin)
       const botMember = await bot.telegram.getChatMember(groupId, bot.botInfo.id);
-      if (['member', 'administrator', 'creator'].includes(botMember.status)) {
-        // Cek jumlah member grup
-        const chatInfo = await bot.telegram.getChat(groupId);
-        const memberCount = chatInfo.member_count || 0;
-        if (memberCount >= 10) {
-          validGroups.push(groupId);
-        }
+      if (!['member', 'administrator', 'creator'].includes(botMember.status)) continue;
+
+      // Cek jumlah member grup terkini (tidak perlu admin)
+      const chatInfo = await bot.telegram.getChat(groupId);
+      const memberCount = chatInfo.member_count || 0;
+
+      if (memberCount >= 10) {
+        seen.add(gKey);
+        validGroups.push(groupId);
       }
     } catch (error) {
-      // Jika bot tidak bisa mengakses, skip grup ini
+      // FIX PREMIUM MISI: jika Telegram API menolak akses (mis. CHAT_ADMIN_REQUIRED
+      // atau bot sudah tidak ada di grup), jangan crash — anggap grup belum valid
+      // dan fallback ke status valid yang tersimpan terakhir jika masih masuk akal.
       console.log(`Tidak bisa cek grup ${groupId}: ${error.message}`);
+      if (info.valid && info.active) {
+        // gagal verifikasi live tapi cache menyatakan valid & bot masih tercatat aktif
+        seen.add(gKey);
+        validGroups.push(groupId);
+      }
     }
   }
-  
+
   return validGroups;
 }
 
@@ -636,48 +667,56 @@ bot.on('my_chat_member', async (ctx) => {
 
     const grpData = loadGroups();
     if (!grpData.user_group_count) grpData.user_group_count = {};
+    if (!grpData.groupInfo) grpData.groupInfo = {}; // FIX PREMIUM MISI
 
     if (['member', 'administrator', 'creator'].includes(status)) {
-  if (isGroup && !grpData.groups.includes(chatId)) {
-    grpData.groups.push(chatId);
-    // Tambahkan ke group.js
-    if (!groupIds.includes(chatId)) {
-      groupIds.push(chatId);
-      saveGroupFile();
+  const isNewGroup = isGroup && !grpData.groups.includes(chatId); // FIX PREMIUM MISI
+  if (isGroup) {
+    if (isNewGroup) { // FIX PREMIUM MISI: hanya proses grup yang belum tercatat (cegah duplikat)
+      grpData.groups.push(chatId);
+      // Tambahkan ke group.js
+      if (!groupIds.includes(chatId)) {
+        groupIds.push(chatId);
+        saveGroupFile();
+      }
+      grpData.user_group_count[userId] = (grpData.user_group_count[userId] || 0) + 1;
     }
-    grpData.user_group_count[userId] = (grpData.user_group_count[userId] || 0) + 1;
-    const total = grpData.user_group_count[userId];
+    const total = grpData.user_group_count[userId] || 0;
 
-    // Cek member count grup (bot cukup jadi member)
+    // Cek member count grup (bot cukup jadi member, TIDAK perlu admin)
     let memberCount = 0;
-    try { 
+    try {
       const chatInfo = await ctx.telegram.getChat(chatId);
       memberCount = chatInfo.member_count || 0;
-    } catch { 
-      try { 
-        memberCount = await ctx.telegram.getChatMembersCount(chatId).catch(() => 0); 
-      } catch {} 
+    } catch {
+      try {
+        memberCount = await ctx.telegram.getChatMembersCount(chatId).catch(() => 0);
+      } catch {}
     }
+    // FIX PREMIUM MISI: jika gagal total (mis. CHAT_ADMIN_REQUIRED atau error lain),
+    // memberCount tetap 0 → grup otomatis dianggap BELUM VALID, bot tidak crash.
 
-    // Hitung total grup valid untuk user ini
+    // FIX PREMIUM MISI: simpan kepemilikan & validitas grup ini (bukan admin-check)
+    const gKey = String(chatId);
+    grpData.groupInfo[gKey] = {
+      addedBy: userId,
+      memberCount,
+      valid: memberCount >= 10,
+      active: true,
+      title: chat.title || '',
+    };
+
+    // FIX PREMIUM MISI: hitung ULANG grup valid milik user ini saja (unik, aktif, >=10 member)
     let validGroupCount = 0;
     for (const gId of grpData.groups) {
-      try {
-        // Cek apakah bot masih di grup (cukup jadi member)
-        const botMember = await ctx.telegram.getChatMember(gId, ctx.botInfo.id);
-        if (['member', 'administrator', 'creator'].includes(botMember.status)) {
-          // Cek member count tanpa perlu admin
-          const chatInfo = await ctx.telegram.getChat(gId);
-          const gCount = chatInfo.member_count || 0;
-          if (gCount >= 10) validGroupCount++;
-        }
-      } catch (error) {
-        console.log(`Tidak bisa cek grup ${gId}: ${error.message}`);
+      const gInfo = grpData.groupInfo[String(gId)];
+      if (gInfo && String(gInfo.addedBy) === userId && gInfo.active && gInfo.valid) {
+        validGroupCount++;
       }
     }
 
     // Kirim informasi ke user
-    const needed = 2 - validGroupCount;
+    const needed = Math.max(0, 2 - validGroupCount);
     const statusMsg = 
       `<blockquote>\n` +
       `📢 <b>BOT DITAMBAHKAN KE GRUP</b>\n\n` +
@@ -688,7 +727,7 @@ bot.on('my_chat_member', async (ctx) => {
       `⬡ Total Grup: ${total}\n` +
       `⬡ Member Grup Ini: ${memberCount}\n\n`;
 
-    if (total >= 2 && validGroupCount >= 2) {
+    if (validGroupCount >= 2) { // FIX PREMIUM MISI: syarat murni grup valid unik, bukan total join
       // Berikan premium misi 3 hari
       const now = Math.floor(Date.now() / 1000);
       const missPrem = loadMissPrem();
@@ -743,29 +782,51 @@ bot.on('my_chat_member', async (ctx) => {
 
     if (['left', 'kicked', 'banned', 'restricted'].includes(status)) {
       if (isGroup && grpData.groups.includes(chatId)) {
+        const gKey = String(chatId);
+        // FIX PREMIUM MISI: cabut premium dari PEMILIK grup (yang menambahkan bot),
+        // bukan dari userId pelaku aksi keluar/kick (bisa jadi orang berbeda).
+        const groupOwner = (grpData.groupInfo && grpData.groupInfo[gKey] && grpData.groupInfo[gKey].addedBy)
+          ? String(grpData.groupInfo[gKey].addedBy)
+          : userId;
+
         grpData.groups = grpData.groups.filter(id => id !== chatId);
         // Hapus dari group.js
         groupIds = groupIds.filter(id => id !== chatId);
         saveGroupFile();
 
-        if (grpData.user_group_count[userId]) {
-          grpData.user_group_count[userId]--;
-          if (grpData.user_group_count[userId] < 2) {
-            // Hapus premium misi (bukan permanen)
-            const missPrem = loadMissPrem();
-            if (missPrem[userId]) {
-              delete missPrem[userId];
-              saveMissPrem(missPrem);
-              ctx.telegram.sendMessage(userId,
+        // FIX PREMIUM MISI: tandai grup tidak aktif (bukan lagi grup valid) & buang dari groupInfo
+        if (grpData.groupInfo && grpData.groupInfo[gKey]) {
+          delete grpData.groupInfo[gKey];
+        }
+
+        if (grpData.user_group_count[groupOwner]) {
+          grpData.user_group_count[groupOwner]--;
+        }
+
+        // FIX PREMIUM MISI: hitung ulang grup valid milik pemilik grup ini
+        let ownerValidCount = 0;
+        for (const gId of grpData.groups) {
+          const gInfo = grpData.groupInfo[String(gId)];
+          if (gInfo && String(gInfo.addedBy) === groupOwner && gInfo.active && gInfo.valid) {
+            ownerValidCount++;
+          }
+        }
+
+        if (ownerValidCount < 2) {
+          // Hapus premium misi (bukan permanen) — sistem pencabutan yang sudah ada
+          const missPrem = loadMissPrem();
+          if (missPrem[groupOwner]) {
+            delete missPrem[groupOwner];
+            saveMissPrem(missPrem);
+            ctx.telegram.sendMessage(groupOwner,
   `<blockquote>\n` +
   `❌ <b>PREMIUM DICABUT</b>\n\n` +
-  `❌ Kamu menghapus bot dari grup.\n` +
+  `❌ Bot dikeluarkan/keluar dari salah satu grup valid kamu.\n` +
   `🔒 Akses Premium Misi otomatis dicabut.\n\n` +
   `💡 Tambahkan kembali bot ke 2 grup dengan minimal 10 member untuk mendapatkan Premium lagi.\n` +
   `</blockquote>`,
   { parse_mode: 'HTML' }
 ).catch(() => {});
-            }
           }
         }
         saveGroups(grpData);
@@ -1449,7 +1510,7 @@ bot.command('restorebackup', async (ctx) => {
     }
     // Restore Groups
     if (Array.isArray(payload.groups)) {
-      saveGroups({ groups: payload.groups, user_group_count: payload.user_group_count || {} });
+      saveGroups({ groups: payload.groups, user_group_count: payload.user_group_count || {}, groupInfo: payload.groupInfo || {} }); // FIX PREMIUM MISI
     }
     // Restore Premium Permanen
     if (payload.premiumPermanent && typeof payload.premiumPermanent === 'object') {
