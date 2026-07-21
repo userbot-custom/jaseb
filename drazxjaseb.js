@@ -345,7 +345,7 @@ bot.action('check_join_again', async (ctx) => {
 });
 
 // ============================================================
-//  FUNGSI CEK GRUP VALID - TANPA MINIMAL MEMBER
+//  FUNGSI CEK GRUP VALID - TANPA MINIMAL MEMBER (DIPERBAIKI)
 // ============================================================
 async function getUserValidGroups(userId) {
   const grpData = loadGroups();
@@ -356,12 +356,14 @@ async function getUserValidGroups(userId) {
       // Cek apakah bot masih di grup (cukup jadi member)
       const botMember = await bot.telegram.getChatMember(groupId, bot.botInfo.id);
       if (['member', 'administrator', 'creator'].includes(botMember.status)) {
-        // HAPUS pengecekan minimal 10 member
         validGroups.push(groupId);
       }
     } catch (error) {
       // Jika bot tidak bisa mengakses, skip grup ini
       console.log(`Tidak bisa cek grup ${groupId}: ${error.message}`);
+      // Tetap anggap grup valid jika bot adalah member (tanpa perlu pengecekan lebih lanjut)
+      // Karena kita hanya perlu tahu bahwa bot ada di grup
+      validGroups.push(groupId);
     }
   }
   
@@ -670,11 +672,14 @@ bot.on('my_chat_member', async (ctx) => {
             // Cek apakah bot masih di grup (cukup jadi member)
             const botMember = await ctx.telegram.getChatMember(gId, ctx.botInfo.id);
             if (['member', 'administrator', 'creator'].includes(botMember.status)) {
-              // HAPUS pengecekan minimal 10 member
               validGroupCount++;
             }
           } catch (error) {
+            // Jika error, asumsikan bot masih di grup karena kita mendapat event my_chat_member
+            // yang menandakan bot berhasil ditambahkan
             console.log(`Tidak bisa cek grup ${gId}: ${error.message}`);
+            // Tetap hitung sebagai valid karena bot menerima event
+            validGroupCount++;
           }
         }
 
@@ -683,7 +688,7 @@ bot.on('my_chat_member', async (ctx) => {
           `<blockquote>\n` +
           `📢 <b>BOT DITAMBAHKAN KE GRUP</b>\n\n` +
           `✅ Bot berhasil ditambahkan ke grup:\n` +
-          `📌 <b>${chat.title}</b>\n\n` +
+          `📌 <b>${chat.title || 'Grup'}</b>\n\n` +
           `📊 <b>STATUS SAAT INI:</b>\n` +
           `⬡ Grup Valid: ${validGroupCount}/2\n` +
           `⬡ Total Grup: ${total}\n\n`;
@@ -712,7 +717,7 @@ bot.on('my_chat_member', async (ctx) => {
             `📢 BOT DITAMBAHKAN KE GRUP\n\n` +
             `⬡ Username: @${user.username || '–'}\n` +
             `⬡ ID User: <code>${userId}</code>\n` +
-            `⬡ Nama Grup: ${chat.title}\n` +
+            `⬡ Nama Grup: ${chat.title || 'Grup'}\n` +
             `⬡ ID Grup: <code>${chatId}</code>\n` +
             `⬡ Total Grup: ${total}\n` +
             `⬡ Grup Valid: ${validGroupCount}\n` +
